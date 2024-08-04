@@ -3,17 +3,15 @@
 #include <tgbot/tgbot.h>
 #include <thread>
 #include <chrono>
+#include <fstream>
 
 std::condition_variable cv_send_message;
 std::condition_variable cv_timer;
 std::mutex mtx;
-std::mutex mtx2;
 std::string var;
-std::future<std::string> rep;
 int key;
-bool special = 0;
+int key_quote = 1;
 static std::thread* thread_ptr = nullptr;
-static std::thread* thread_timer_ptr = nullptr;
 
 //bot of one toxic but funny person
 
@@ -102,10 +100,20 @@ void Send_message_thread(long long& chat_id, int32_t messageId, const char* str,
     bot.getApi().sendMessage(ci, str, false, mi);
 }
 
+void DelayMessage(long long& chat_id, int32_t messageId, const char* str, int&& time, TgBot::Bot& bot) {
+    long long ci = chat_id;
+    int32_t mi = messageId;
+    std::this_thread::sleep_for(std::chrono::seconds(5));
+    mtx.lock();
+    bot.getApi().sendMessage(ci, u8"шучу, не буду скидывать)))", false, mi);
+    mtx.unlock();
+}
 //осторожно мАтЫ
 
 int main() {
-    TgBot::Bot bot("не скажу)");
+    TgBot::Bot bot("6749990719:AAFGCse6AjkFgsc10NFA8FdBPiXs3F7iiOM");
+
+    //============================ КОМАНДЫ ============================//
 
     bot.getEvents().onCommand("start", [&bot](TgBot::Message::Ptr message) {
         if (message->from->lastName != "") {
@@ -116,9 +124,42 @@ int main() {
         }
         bot.getApi().sendMessage(message->chat->id, var);
         });
+
+
     bot.getEvents().onCommand("session", [&bot](TgBot::Message::Ptr message) {
         bot.getApi().sendMessage(message->chat->id, session());
         });
+
+
+    bot.getEvents().onCommand("quote", [&bot](TgBot::Message::Ptr message) {//присылает стикер с цитатой этого гения
+        srand(time(0));
+        key_quote = (rand() % 5);
+        switch (key_quote) {
+        case 0: 
+            bot.getApi().sendSticker(message->chat->id, "CAACAgIAAxkBAAEs6z5mq2rJV3d26YFs_-kGXe61TXzuUQACwEUAAmgQ0UuE9rHoEfV4FjUE");
+            break;
+        case 1: 
+            bot.getApi().sendSticker(message->chat->id, "CAACAgIAAxkBAAEs61xmq24ZX_ULust3A5uWuWf1H8GhdAACtEEAAsVh0Us2TKGztcYUdjUE");
+            break;
+        case 2:
+            bot.getApi().sendSticker(message->chat->id, "CAACAgIAAxkBAAEs61Bmq2y4lo9Wme-BBU96luAvRwv2QQACnTkAAnb0OUgcqcC-kXdWuDUE");
+            break;
+        case 3: 
+            bot.getApi().sendSticker(message->chat->id, "CAACAgIAAxkBAAEs7w5mrJd0yRTdsaRDGNwxgdNJF-OKrwACR00AAmnzaEkj6DZeMdFF1DUE");
+            break;
+        case 4:
+            bot.getApi().sendSticker(message->chat->id, "CAACAgIAAxkBAAEs71hmrKt59nl4fRL5lirW34ypenuUywACk08AAmswYEnJf5G-zTQ_ijUE");
+            bot.getApi().sendSticker(message->chat->id, "CAACAgIAAxkBAAEs71pmrKt7i6qWDRwZUH9p9aPLGT3_CAACxU0AAqZ0aUncDQWpkxSNnDUE");
+            break;
+        }
+        });
+
+    bot.getEvents().onCommand("coin_holder", [&bot](TgBot::Message::Ptr message) {
+        bot.getApi().sendPhoto(message->chat->id, "https://sun9-78.userapi.com/impg/Y02GK2lcTFPcAGHvcHJYkax6xoJbUVYp0B4NfQ/l4wn7wMv-KA.jpg?size=608x675&quality=95&sign=22887142739252955d65111ed1082042&type=album");
+        });
+
+    //============================ ЛЮБОЕ СООБЩЕНИЕ ============================//
+
     bot.getEvents().onAnyMessage([&bot](TgBot::Message::Ptr message) {
         printf("\nUser wrote %s\n", message->text.c_str());
         if (StringTools::startsWith(message->text, u8"евген") || StringTools::startsWith(message->text, u8"Евген")) {
@@ -130,10 +171,16 @@ int main() {
             bot.getApi().sendMessage(message->chat->id, u8"да ты че ахуел блять говно я не буду на это отвечать тебя бы за такое на зоне бы выебали шпана ебаная");
             return;
         }
+        if (StringTools::startsWith(message->text, "/coin_holder")) {
+            return;
+        }
         if (StringTools::startsWith(message->text, "/start")) {
             return;
         }
         if (StringTools::startsWith(message->text, "/session")) {
+            return;
+        }
+        if (StringTools::startsWith(message->text, "/quote")) {
             return;
         }
         if (message->from->username == "microsoft2012") { //alexschetin1621 microsoft2012
@@ -169,15 +216,28 @@ int main() {
                     thread_ptr = new std::thread(Send_message_thread, std::ref(message->chat->id), std::ref(message->messageId), u8"шучу, не буду скидывать)))", std::ref(bot));
                 }
 
+                /*ниже тут более эффективное но скучное решение той же задачи
+
+                if (thread_ptr != nullptr) {
+                    thread_ptr->detach();
+                    delete thread_ptr;
+                    thread_ptr = nullptr;
+                }
+
+                thread_ptr = new std::thread(DelayMessage, std::ref(message->chat->id), std::ref(message->messageId), u8"шучу, не буду скидывать)))", 5, std::ref(bot));
+                */
                 break;
             }
+            case 9: bot.getApi().sendMessage(message->chat->id, u8"Что!? " + message->text + u8"?\nНадеюсь, ты, сын шлюхи, хоть в этот раз за свои слова постоишь. Мне вот интересно, у тебя отец такое же трепло как и ты?");
+                break;
             default: bot.getApi().sendMessage(message->chat->id, u8"этого ответа ты никогда не должен был получить напиши моему создателю");
             }
             return;
         }
         
         bot.getApi().sendMessage(message->chat->id, u8"Что!? " + message->text + u8"?\nНадеюсь, ты, сын шлюхи, хоть в этот раз за свои слова постоишь. Мне вот интересно, у тебя отец такое же трепло как и ты?");
-        //одна из его цитат нашему одногруппнику
+        //одна из его цитат нашему одногрупу
+
         });
     try {
         printf("Bot username: %s\n", bot.getApi().getMe()->username.c_str());
