@@ -111,7 +111,7 @@ void DelayMessage(long long& chat_id, int32_t messageId, const char* str, int&& 
 //осторожно мАтЫ
 
 int main() {
-    TgBot::Bot bot("6749990719:AAFGCse6AjkFgsc10NFA8FdBPiXs3F7iiOM");
+    TgBot::Bot bot("не скажу!)");
 
     //============================ КОМАНДЫ ============================//
 
