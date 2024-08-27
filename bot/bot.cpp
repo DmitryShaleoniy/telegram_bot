@@ -4,11 +4,15 @@
 #include <thread>
 #include <chrono>
 #include <fstream>
+#include <mysql.h>
 
 std::condition_variable cv_send_message;
 std::condition_variable cv_timer;
 std::mutex mtx;
 std::string var;
+
+MYSQL* conn;
+
 int key;
 int key_quote = 1;
 static std::thread* thread_ptr = nullptr;
@@ -111,7 +115,7 @@ void DelayMessage(long long& chat_id, int32_t messageId, const char* str, int&& 
 //осторожно мАтЫ
 
 int main() {
-    TgBot::Bot bot("не скажу!)");
+    TgBot::Bot bot("секрет!!!!!!!");
 
     //============================ КОМАНДЫ ============================//
 
@@ -240,12 +244,22 @@ int main() {
 
         });
     try {
-        printf("Bot username: %s\n", bot.getApi().getMe()->username.c_str());
-        std::thread th (Timer_thread, 5);
-        TgBot::TgLongPoll longPoll(bot);
-        while (true) {
-            printf("\nLong poll started");
-            longPoll.start();
+        conn = mysql_init(0);
+        conn = mysql_real_connect(conn, "localhost", "root", "", "tgbot", 3306, NULL, 0);
+
+        if (conn) {
+            printf("Bot username: %s\n", bot.getApi().getMe()->username.c_str());
+            std::thread th(Timer_thread, 5);
+            TgBot::TgLongPoll longPoll(bot);
+            while (true) {
+                printf("\nLong poll started");
+                longPoll.start();
+            }
+        }
+        else {
+            std::cerr << "Connection to database has failed: "<< mysql_error(conn) << std::endl;
+            mysql_close(conn);
+            return 1;
         }
     }
     catch (TgBot::TgException& e) {
