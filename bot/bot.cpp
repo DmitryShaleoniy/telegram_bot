@@ -10,11 +10,17 @@ std::condition_variable cv_send_message;
 std::condition_variable cv_timer;
 std::mutex mtx;
 std::string var;
+std::string query;
+std::string username;
+char* user_id;
 
 MYSQL* conn;
+MYSQL_RES* res;
+MYSQL_ROW row;
 
 int key;
 int key_quote = 1;
+int coins;
 static std::thread* thread_ptr = nullptr;
 
 //bot of one toxic but funny person
@@ -115,7 +121,7 @@ void DelayMessage(long long& chat_id, int32_t messageId, const char* str, int&& 
 //осторожно мАтЫ
 
 int main() {
-    TgBot::Bot bot("секрет!!!!!!!");
+    TgBot::Bot bot("не скажу!!!!");
 
     //============================ КОМАНДЫ ============================//
 
@@ -159,7 +165,49 @@ int main() {
         });
 
     bot.getEvents().onCommand("coin_holder", [&bot](TgBot::Message::Ptr message) {
+        //регистрация пользователя
+        query = "SELECT COUNT(*) FROM `users` WHERE id = " + std::to_string(message->from->id);
+        if (mysql_query(conn, query.c_str())) {
+            std::cerr << "\nquery failed: " << mysql_error(conn) << std::endl;
+            mysql_close(conn);
+            return 1;
+        }
+        else {
+            res = mysql_store_result(conn);
+            row = mysql_fetch_row(res);
+            if (row[0][0] == '0') {
+                query = "INSERT INTO users(id, name) VALUES(" + std::to_string(message->from->id) + ", \"" + message->from->username + "\");";
+                if (mysql_query(conn, query.c_str())) {
+                    std::cerr << "\nquery failed: " << mysql_error(conn) << std::endl;
+                    mysql_free_result(res);
+                    mysql_close(conn);
+                    return 1;
+                }
+            }
+        }
         bot.getApi().sendPhoto(message->chat->id, "https://sun9-78.userapi.com/impg/Y02GK2lcTFPcAGHvcHJYkax6xoJbUVYp0B4NfQ/l4wn7wMv-KA.jpg?size=608x675&quality=95&sign=22887142739252955d65111ed1082042&type=album");
+        query = "SELECT coins FROM `users` WHERE id = " + std::to_string(message->from->id);
+        if (mysql_query(conn, query.c_str())) {
+            std::cerr << "\nquery failed: " << mysql_error(conn) << std::endl;
+            mysql_close(conn);
+            return 1;
+        }
+        else {
+            res = mysql_store_result(conn);
+            row = mysql_fetch_row(res);
+            coins = std::stoi(row[0]);
+            coins++;
+            query = "UPDATE users SET coins = " + std::to_string(coins) + " WHERE id = " + std::to_string(message->from->id);
+            if (mysql_query(conn, query.c_str())) {
+                std::cerr << "\nquery failed: " << mysql_error(conn) << std::endl;
+                mysql_close(conn);
+                return 1;
+            }
+            else {
+                std::cout << "coins added" << std::endl;
+                bot.getApi().sendMessage(message->chat->id, u8"кинул монетку в копилку!");
+            }
+        }
         });
 
     //============================ ЛЮБОЕ СООБЩЕНИЕ ============================//
@@ -187,6 +235,9 @@ int main() {
         if (StringTools::startsWith(message->text, "/quote")) {
             return;
         }
+
+        //============================ СООБЩЕНИЕ ТОЛЬКО МАКАРУ ============================//
+
         if (message->from->username == "microsoft2012") { //alexschetin1621 microsoft2012
             srand(time(0));
             key = (rand() % 8) + 1;
@@ -234,11 +285,12 @@ int main() {
             }
             case 9: bot.getApi().sendMessage(message->chat->id, u8"Что!? " + message->text + u8"?\nНадеюсь, ты, сын шлюхи, хоть в этот раз за свои слова постоишь. Мне вот интересно, у тебя отец такое же трепло как и ты?");
                 break;
-            default: bot.getApi().sendMessage(message->chat->id, u8"этого ответа ты никогда не должен был получить напиши моему создателю");
+            default: bot.getApi().sendMessage(message->chat->id, u8"этого ответа ты никогда не должен был получить, напиши моему создателю");
             }
             return;
         }
-        
+
+        //=================================================================================//
         bot.getApi().sendMessage(message->chat->id, u8"Что!? " + message->text + u8"?\nНадеюсь, ты, сын шлюхи, хоть в этот раз за свои слова постоишь. Мне вот интересно, у тебя отец такое же трепло как и ты?");
         //одна из его цитат нашему одногрупу
 
