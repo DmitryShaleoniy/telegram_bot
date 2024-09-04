@@ -139,7 +139,7 @@ void DelayMessage(long long& chat_id, int32_t messageId, const char* str, int&& 
 //осторожно мАтЫ
 
 int main() {
-    TgBot::Bot bot("6749990719:AAFGCse6AjkFgsc10NFA8FdBPiXs3F7iiOM");
+    TgBot::Bot bot("не скажу!");
 
     //============================ КОМАНДЫ ============================//
 
@@ -282,11 +282,15 @@ int main() {
             row = mysql_fetch_row(res);
             coins = std::stoi(row[0]);
             access_lvl = std::stoi(row[1]);
+            if (access_lvl == 6) {
+                bot.getApi().sendMessage(message->chat->id, u8"куда уж выше");
+                return 1;
+            }
             int price = (access_lvl + 1) * 10; //первый уровень стоит 10, второй 20...
             if (coins >= price) {
                 access_lvl++;
                 coins -= price;
-                query = "UPDATE users SET coins = " + std::to_string(coins) + ", access_lvl_st = " + std::to_string(access_lvl) + " WHERE id = 542852695";
+                query = "UPDATE users SET coins = " + std::to_string(coins) + ", access_lvl_st = " + std::to_string(access_lvl) + " WHERE id = " + std::to_string(message->from->id);
                 if (mysql_query(conn, query.c_str())) {
                     bot.getApi().sendMessage(message->chat->id, u8"мне не нужны твои деньги!!");
                     std::cerr << "\nquery failed: " << query << mysql_error(conn) << std::endl;
@@ -294,6 +298,29 @@ int main() {
                 }
                 //потом при каждом новом уровне добавлять разные истории про Дмитрия, которые объясняют полученную цитату - мне кажется крутейшая атмосферная идея
                 bot.getApi().sendMessage(message->chat->id, u8"так уж и быть, вижу ты нормальный тип!");
+                switch (access_lvl - 1) {
+                case 0:
+                    bot.getApi().sendSticker(message->chat->id, "CAACAgIAAxkBAAEs6z5mq2rJV3d26YFs_-kGXe61TXzuUQACwEUAAmgQ0UuE9rHoEfV4FjUE");
+                    break;
+                case 1:
+                    bot.getApi().sendSticker(message->chat->id, "CAACAgIAAxkBAAEs61xmq24ZX_ULust3A5uWuWf1H8GhdAACtEEAAsVh0Us2TKGztcYUdjUE");
+                    break;
+                case 2:
+                    bot.getApi().sendSticker(message->chat->id, "CAACAgIAAxkBAAEs61Bmq2y4lo9Wme-BBU96luAvRwv2QQACnTkAAnb0OUgcqcC-kXdWuDUE");
+                    break;
+                case 3:
+                    bot.getApi().sendSticker(message->chat->id, "CAACAgIAAxkBAAEs7w5mrJd0yRTdsaRDGNwxgdNJF-OKrwACR00AAmnzaEkj6DZeMdFF1DUE");
+                    break;
+                case 4:
+                    bot.getApi().sendSticker(message->chat->id, "CAACAgIAAxkBAAEs71hmrKt59nl4fRL5lirW34ypenuUywACk08AAmswYEnJf5G-zTQ_ijUE");
+                    break;
+                case 5:
+                    bot.getApi().sendSticker(message->chat->id, "CAACAgIAAxkBAAEs71pmrKt7i6qWDRwZUH9p9aPLGT3_CAACxU0AAqZ0aUncDQWpkxSNnDUE");
+                    break;
+                default:
+                    bot.getApi().sendMessage(message->chat->id, u8"успокойся уже да");
+                    break;
+                }
             }
             else {
                 auto message1 = bot.getApi().sendMessage(message->chat->id, u8"печатает...");
@@ -337,30 +364,70 @@ int main() {
             break;
         case 1:
             bot.getApi().sendMessage(message->chat->id, u8"ваш уровень - ОДИН!!! вы - чушка");
+            bot.getApi().sendSticker(message->chat->id, "CAACAgIAAxkBAAEs6z5mq2rJV3d26YFs_-kGXe61TXzuUQACwEUAAmgQ0UuE9rHoEfV4FjUE");
             break;
         case 2:
             bot.getApi().sendMessage(message->chat->id, u8"ваш уровень - ДВА!!! вы - пацан");
+            bot.getApi().sendSticker(message->chat->id, "CAACAgIAAxkBAAEs61xmq24ZX_ULust3A5uWuWf1H8GhdAACtEEAAsVh0Us2TKGztcYUdjUE");
             break;
         case 3:
             bot.getApi().sendMessage(message->chat->id, u8"ваш уровень - ТРИ!!! вы - мужик");
+            bot.getApi().sendSticker(message->chat->id, "CAACAgIAAxkBAAEs61Bmq2y4lo9Wme-BBU96luAvRwv2QQACnTkAAnb0OUgcqcC-kXdWuDUE");
             break;
         case 4:
             bot.getApi().sendMessage(message->chat->id, u8"ваш уровень - ЧЕТЫРЕ!!! вы - блатной");
+            bot.getApi().sendSticker(message->chat->id, "CAACAgIAAxkBAAEs7w5mrJd0yRTdsaRDGNwxgdNJF-OKrwACR00AAmnzaEkj6DZeMdFF1DUE");
             break;
         case 5:
             bot.getApi().sendMessage(message->chat->id, u8"ваш уровень - ПЯТЬ!!! вы - пахан");
+            bot.getApi().sendSticker(message->chat->id, "CAACAgIAAxkBAAEs71hmrKt59nl4fRL5lirW34ypenuUywACk08AAmswYEnJf5G-zTQ_ijUE");
             break;
         case 6:
             bot.getApi().sendMessage(message->chat->id, u8"привет Яна пойдем гулять");
-            bot.getApi().sendSticker(message->chat->id, "CAACAgIAAxkBAAEteMhm1N2uA1VrJzIeUihwnL3eUbRm0wAC5A0AAvz70UjzPFahRIdPHjUE");
+            bot.getApi().sendSticker(message->chat->id, "CAACAgIAAxkBAAEs71pmrKt7i6qWDRwZUH9p9aPLGT3_CAACxU0AAqZ0aUncDQWpkxSNnDUE");
+
+           //bot.getApi().sendSticker(message->chat->id, "CAACAgIAAxkBAAEteMhm1N2uA1VrJzIeUihwnL3eUbRm0wAC5A0AAvz70UjzPFahRIdPHjUE");
             break;
         default:
             bot.getApi().sendMessage(message->chat->id, u8"успокойся уже да");
             break;
         }
+        });
 
+    bot.getEvents().onCommand("balance", [&bot](TgBot::Message::Ptr message) {
+        try {
+            UserRegistration(message);
+        }
+        catch (QuaryException& ex) {
+            bot.getApi().sendMessage(message->chat->id, u8"ты кто");
+            std::cout << ex.what() << std::endl;
+            mysql_free_result(res);
+            return 1;
+        }
+        query = "SELECT coins FROM `users` WHERE id = " + std::to_string(message->from->id);
+        if (mysql_query(conn, query.c_str())) {
+            bot.getApi().sendMessage(message->chat->id, u8"не знаю!");
+            std::cerr << "\nquery failed: " << query << mysql_error(conn) << std::endl;
+            return 1;
+        }
+        srand(time(NULL));
+        res = mysql_store_result(conn);
+        row = mysql_fetch_row(res);
+        coins = std::stoi(row[0]);
+        std::string coin_tale;
+
+        if (coins % 10 == 1)
+            coin_tale = u8" монета!";
+        else if (coins % 10 >= 2 && coins % 10 <= 4)
+            coin_tale = u8" монеты!";
+        else
+            coin_tale = u8" монет!";
+
+        bot.getApi().sendMessage(message->chat->id, u8"ваш баланс = " + std::to_string(coins) + coin_tale);
 
         });
+
+    //по приколу можно добавить метод god_mode как пасхалку чтобы юзер мог редактировать свои параметры
 
     //============================ ЛЮБОЕ СООБЩЕНИЕ ============================//
 
@@ -385,6 +452,15 @@ int main() {
             return;
         }
         if (StringTools::startsWith(message->text, "/quote")) {
+            return;
+        }
+        if (StringTools::startsWith(message->text, "/your_trust")) {
+            return;
+        }    
+        if (StringTools::startsWith(message->text, "/increase_trust")) {            
+            return;            
+        }
+        if (StringTools::startsWith(message->text, "/balance")) {
             return;
         }
 
