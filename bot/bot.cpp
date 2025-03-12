@@ -439,7 +439,7 @@ int main() {
         }
         if (message->text.size() > 4096) {
             bot.getApi().deleteMessage(message->chat->id, message->messageId);
-            bot.getApi().sendMessage(message->chat->id, u8"да ты че ахуел блять говно я не буду на это отвечать тебя бы за такое на зоне бы выебали шпана ебаная");
+            bot.getApi().sendMessage(message->chat->id, u8" добро и позитив");
             return;
         }
         if (StringTools::startsWith(message->text, "/coin_holder")) {
