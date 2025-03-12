@@ -511,7 +511,7 @@ int main() {
                 */
                 break;
             }
-            case 9: bot.getApi().sendMessage(message->chat->id, u8"Что!? " + message->text + u8"?\nНадеюсь, ты, сын шлюхи, хоть в этот раз за свои слова постоишь. Мне вот интересно, у тебя отец такое же трепло как и ты?");
+            case 9: bot.getApi().sendMessage(message->chat->id, u8"Что!? " + message->text + u8"?\nНадеюсь у тебя все хорошо");
                 break;
             default: bot.getApi().sendMessage(message->chat->id, u8"этого ответа ты никогда не должен был получить, напиши моему создателю");
             }
